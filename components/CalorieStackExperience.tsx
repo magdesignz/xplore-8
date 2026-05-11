@@ -13,7 +13,6 @@ import { MealTabs }          from "./MealTabs";
 import { FoodCard }          from "./FoodCard";
 import { StackArea }         from "./StackArea";
 import { CircularProgress }  from "./CircularProgress";
-import { GoalPopup }         from "./GoalPopup";
 
 import { CALORIE_GOAL, MEAL_FOODS } from "@/lib/data";
 import type { MealCategory, FoodItem, StackLayer } from "@/lib/types";
@@ -52,9 +51,8 @@ export default function CalorieStackExperience() {
   const plateRef = useRef<HTMLDivElement>(null);
 
   // ── Calorie / goal ───────────────────────────────────────────────────────
-  const bounceControls  = useAnimation();
-  const prevGoalRef     = useRef(false);
-  const [showGoalPopup, setShowGoalPopup] = useState(false);
+  const bounceControls = useAnimation();
+  const prevGoalRef    = useRef(false);
 
   const totalCalories = stackLayers.reduce((sum, l) => sum + l.calories, 0);
   const isGoalReached = totalCalories >= CALORIE_GOAL;
@@ -65,7 +63,6 @@ export default function CalorieStackExperience() {
         scale: [1, 1.09, 0.95, 1.05, 1],
         transition: { duration: 0.6, ease: "easeInOut" },
       });
-      setShowGoalPopup(true);
     }
     prevGoalRef.current = isGoalReached;
   }, [isGoalReached, bounceControls]);
@@ -107,12 +104,6 @@ export default function CalorieStackExperience() {
     }));
   }, []);
 
-  const handleReset = useCallback(() => {
-    setShowGoalPopup(false);
-    setStackLayers([]);
-    setFoodCounts({});
-  }, []);
-
   const currentFoods = MEAL_FOODS[activeMeal];
 
   // ── SSR shell ─────────────────────────────────────────────────────────────
@@ -152,7 +143,6 @@ export default function CalorieStackExperience() {
             style={{
               width:      286,
               minWidth:   286,
-              height:     338.25,
               background: "#F8F8F8",
               border:     "1.5px solid #FFFFFF",
               boxShadow:  "0px 4px 16px rgba(0,0,0,0.07)",
@@ -199,8 +189,8 @@ export default function CalorieStackExperience() {
             {/* Divider */}
             <div style={{ height: 1, background: "#EFEFEF", margin: "0 16px" }} />
 
-            {/* Stack area — fills remaining card height */}
-            <div className="px-4 py-1 flex-1" style={{ overflow: "visible", minHeight: 0 }}>
+            {/* Stack area — 30 px below the divider */}
+            <div className="px-4 pt-1" style={{ height: 30, overflow: "visible" }}>
               <StackArea stackLayers={stackLayers} />
             </div>
           </motion.div>
@@ -220,7 +210,7 @@ export default function CalorieStackExperience() {
                 {activeMeal}
               </div>
               <div className="text-xs mt-0.5" style={{ color: "#8A8A8A" }}>
-                Tap + to add items to your plate
+                Drag / Tap + to add items to your plate
               </div>
             </motion.div>
 
@@ -261,11 +251,6 @@ export default function CalorieStackExperience() {
           </div>
         </div>
       </div>
-
-      {/* ── Goal popup ── */}
-      <AnimatePresence>
-        {showGoalPopup && <GoalPopup key="goal-popup" onReset={handleReset} />}
-      </AnimatePresence>
 
       {/* ── Fixed-position drag ghost — renders above ALL stacking contexts ── */}
       <AnimatePresence>
