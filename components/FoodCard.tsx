@@ -13,6 +13,7 @@ interface FoodCardProps {
   plateRef?:    React.RefObject<HTMLDivElement | null>;
   onDragStart?: () => void;
   onDragEnd?:   () => void;
+  onDragMove?:  (point: { x: number; y: number }) => void;
   onDragOverPlate?: (isOver: boolean) => void;
 }
 
@@ -25,7 +26,7 @@ function dragRotation(food: FoodItem) {
 export function FoodCard({
   food, count, onAdd, onRemove,
   goalReached = false,
-  plateRef, onDragStart, onDragEnd, onDragOverPlate,
+  plateRef, onDragStart, onDragEnd, onDragMove, onDragOverPlate,
 }: FoodCardProps) {
   const [minusBurst, setMinusBurst] = useState(false);
   const [isDragging,  setIsDragging]  = useState(false);
@@ -52,6 +53,7 @@ export function FoodCard({
   };
 
   const handleDrag = (_: unknown, info: { point: { x: number; y: number } }) => {
+    onDragMove?.(info.point);
     if (!plateRef?.current) return;
     const r = plateRef.current.getBoundingClientRect();
     const over =
@@ -103,7 +105,7 @@ export function FoodCard({
       whileHover={{ y: -3, boxShadow: "0px 8px 22px rgba(0,0,0,0.09)" }}
       transition={{ type: "spring", stiffness: 320, damping: 20 }}
     >
-      {/* ── Draggable emoji ── */}
+      {/* ── Draggable emoji (invisible while dragging — parent renders ghost) ── */}
       <motion.span
         drag
         dragMomentum={false}
@@ -112,18 +114,11 @@ export function FoodCard({
         onDragStart={handleDragStart}
         onDrag={handleDrag}
         onDragEnd={handleDragEnd}
-        whileDrag={{
-          scale:   1.4,
-          rotate:  rot,
-          filter:  "drop-shadow(0px 6px 14px rgba(0,0,0,0.22))",
-          zIndex:  999,
-          cursor:  "grabbing",
-        }}
         className="text-xl select-none leading-none shrink-0"
         style={{
-          cursor:      "grab",
+          cursor:      isDragging ? "grabbing" : "grab",
           touchAction: "none",
-          zIndex:      isDragging ? 999 : "auto",
+          opacity:     isDragging ? 0 : 1,
           position:    "relative",
         }}
       >

@@ -20,7 +20,8 @@ interface CircularProgressProps {
 const CHART_SIZE = 196;
 const OUTER_R    = 91;
 const INNER_R    = 84;
-const PLATE_SIZE = 92; // 88–96px per spec
+// plate radius = INNER_R - 10 (10px gap on every side) = 74 → diameter 148
+const PLATE_SIZE = 148;
 
 const chartConfig: ChartConfig = {
   progress: { label: "Progress" },

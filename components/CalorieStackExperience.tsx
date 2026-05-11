@@ -44,6 +44,8 @@ export default function CalorieStackExperience() {
   // ── Drag state ───────────────────────────────────────────────────────────
   const [isAnyDragging,   setIsAnyDragging]   = useState(false);
   const [isDragOverPlate, setIsDragOverPlate] = useState(false);
+  const [draggingFood,    setDraggingFood]    = useState<FoodItem | null>(null);
+  const [dragPos,         setDragPos]         = useState({ x: 0, y: 0 });
 
   // ── Plate ref (forwarded into CircularProgress) ──────────────────────────
   const plateRef = useRef<HTMLDivElement>(null);
@@ -238,8 +240,9 @@ export default function CalorieStackExperience() {
                       onRemove={() => handleRemove(food)}
                       goalReached={isGoalReached}
                       plateRef={plateRef}
-                      onDragStart={() => setIsAnyDragging(true)}
-                      onDragEnd={()   => setIsAnyDragging(false)}
+                      onDragStart={() => { setIsAnyDragging(true); setDraggingFood(food); }}
+                      onDragEnd={()   => { setIsAnyDragging(false); setDraggingFood(null); }}
+                      onDragMove={(pt) => setDragPos(pt)}
                       onDragOverPlate={setIsDragOverPlate}
                     />
                   </motion.div>
@@ -274,6 +277,34 @@ export default function CalorieStackExperience() {
           </div>
         </div>
       </div>
+
+      {/* ── Fixed-position drag ghost — renders above ALL stacking contexts ── */}
+      <AnimatePresence>
+        {draggingFood && (
+          <motion.div
+            key="drag-ghost"
+            initial={{ scale: 0.6, opacity: 0 }}
+            animate={{ scale: 1,   opacity: 1 }}
+            exit={{    scale: 0.6, opacity: 0, transition: { duration: 0.12 } }}
+            transition={{ type: "spring", stiffness: 500, damping: 28 }}
+            className="pointer-events-none fixed flex items-center justify-center select-none"
+            style={{
+              width:  70,
+              height: 70,
+              left:   dragPos.x - 35,
+              top:    dragPos.y - 35,
+              zIndex: 99999,
+              fontSize: 48,
+              filter: isDragOverPlate
+                ? "drop-shadow(0px 0px 14px rgba(76,175,80,0.6))"
+                : "drop-shadow(0px 8px 18px rgba(0,0,0,0.28))",
+              rotate: `${((draggingFood.id.charCodeAt(0) + draggingFood.id.charCodeAt(draggingFood.id.length - 1)) % 11 - 5) * 3}deg`,
+            }}
+          >
+            {draggingFood.emoji}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
