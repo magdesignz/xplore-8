@@ -1,25 +1,40 @@
 "use client";
 
-import { useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { useState, useRef } from "react";
+import { motion, AnimatePresence, useAnimation } from "motion/react";
 import type { FoodItem } from "@/lib/types";
 
 interface FoodCardProps {
-  food: FoodItem;
-  count: number;
-  onAdd: () => void;
-  onRemove: () => void;
+  food:         FoodItem;
+  count:        number;
+  onAdd:        () => void;
+  onRemove:     () => void;
   goalReached?: boolean;
+  plateRef?:    React.RefObject<HTMLDivElement | null>;
+  onDragStart?: () => void;
+  onDragEnd?:   () => void;
+  onDragOverPlate?: (isOver: boolean) => void;
 }
 
-export function FoodCard({ food, count, onAdd, onRemove, goalReached = false }: FoodCardProps) {
-  const [plusBurst,  setPlusBurst]  = useState(false);
-  const [minusBurst, setMinusBurst] = useState(false);
+// Stable per-food rotation for the drag ghost (deterministic, not random)
+function dragRotation(food: FoodItem) {
+  const code = food.id.charCodeAt(0) + food.id.charCodeAt(food.id.length - 1);
+  return ((code % 11) - 5) * 3; // –15° to +15°
+}
 
+export function FoodCard({
+  food, count, onAdd, onRemove,
+  goalReached = false,
+  plateRef, onDragStart, onDragEnd, onDragOverPlate,
+}: FoodCardProps) {
+  const [minusBurst, setMinusBurst] = useState(false);
+  const [isDragging,  setIsDragging]  = useState(false);
+  const emojiControls = useAnimation();
+  const rot = dragRotation(food);
+
+  /* ── +/- button handlers ── */
   const handleAdd = () => {
     if (goalReached) return;
-    setPlusBurst(true);
-    setTimeout(() => setPlusBurst(false), 140);
     onAdd();
   };
 
@@ -30,27 +45,94 @@ export function FoodCard({ food, count, onAdd, onRemove, goalReached = false }: 
     onRemove();
   };
 
+  /* ── Drag handlers ── */
+  const handleDragStart = () => {
+    setIsDragging(true);
+    onDragStart?.();
+  };
+
+  const handleDrag = (_: unknown, info: { point: { x: number; y: number } }) => {
+    if (!plateRef?.current) return;
+    const r = plateRef.current.getBoundingClientRect();
+    const over =
+      info.point.x >= r.left && info.point.x <= r.right &&
+      info.point.y >= r.top  && info.point.y <= r.bottom;
+    onDragOverPlate?.(over);
+  };
+
+  const handleDragEnd = async (
+    _: unknown,
+    info: { point: { x: number; y: number } }
+  ) => {
+    setIsDragging(false);
+    onDragEnd?.();
+    onDragOverPlate?.(false);
+
+    if (plateRef?.current) {
+      const r = plateRef.current.getBoundingClientRect();
+      const dropped =
+        info.point.x >= r.left && info.point.x <= r.right &&
+        info.point.y >= r.top  && info.point.y <= r.bottom;
+
+      if (dropped && !goalReached) {
+        // Pulse then shrink into plate, then reset
+        await emojiControls.start({ scale: 1.5, transition: { duration: 0.1 } });
+        await emojiControls.start({ scale: 0, opacity: 0, transition: { duration: 0.15 } });
+        emojiControls.set({ x: 0, y: 0, scale: 1, opacity: 1 });
+        onAdd();
+        return;
+      }
+    }
+
+    // Not on plate — spring back
+    emojiControls.start({
+      x: 0, y: 0,
+      transition: { type: "spring", stiffness: 500, damping: 30 },
+    });
+  };
+
   return (
     <motion.div
       className="w-full rounded-[20px] px-4 py-3 flex items-center gap-3"
       style={{
-        background:  "#F8F8F8",
-        border:      "1.5px solid #FFFFFF",
-        boxShadow:   "0px 4px 12px rgba(0,0,0,0.055)",
-        cursor:      "default",
+        background: "#F8F8F8",
+        border:     "1.5px solid #FFFFFF",
+        boxShadow:  "0px 4px 12px rgba(0,0,0,0.055)",
+        cursor:     "default",
       }}
       whileHover={{ y: -3, boxShadow: "0px 8px 22px rgba(0,0,0,0.09)" }}
       transition={{ type: "spring", stiffness: 320, damping: 20 }}
     >
-      {/* Emoji */}
-      <span className="text-xl select-none leading-none shrink-0">{food.emoji}</span>
+      {/* ── Draggable emoji ── */}
+      <motion.span
+        drag
+        dragMomentum={false}
+        dragElastic={0.08}
+        animate={emojiControls}
+        onDragStart={handleDragStart}
+        onDrag={handleDrag}
+        onDragEnd={handleDragEnd}
+        whileDrag={{
+          scale:   1.4,
+          rotate:  rot,
+          filter:  "drop-shadow(0px 6px 14px rgba(0,0,0,0.22))",
+          zIndex:  999,
+          cursor:  "grabbing",
+        }}
+        className="text-xl select-none leading-none shrink-0"
+        style={{
+          cursor:      "grab",
+          touchAction: "none",
+          zIndex:      isDragging ? 999 : "auto",
+          position:    "relative",
+        }}
+      >
+        {food.emoji}
+      </motion.span>
 
-      {/* Name + cals */}
+      {/* ── Name + cals ── */}
       <div className="flex-1 min-w-0">
-        <div
-          className="text-sm font-semibold truncate leading-tight"
-          style={{ color: "#1A1A1A" }}
-        >
+        <div className="text-sm font-semibold truncate leading-tight" style={{ color: "#1A1A1A" }}>
           {food.name}
         </div>
         <div className="text-xs font-medium mt-0.5" style={{ color: "#8A8A8A" }}>
@@ -58,7 +140,7 @@ export function FoodCard({ food, count, onAdd, onRemove, goalReached = false }: 
         </div>
       </div>
 
-      {/* Controls */}
+      {/* ── Controls ── */}
       <div className="flex items-center gap-2 shrink-0">
 
         {/* Minus */}
@@ -79,7 +161,7 @@ export function FoodCard({ food, count, onAdd, onRemove, goalReached = false }: 
           −
         </motion.button>
 
-        {/* Count — flips vertically on change */}
+        {/* Count */}
         <AnimatePresence mode="popLayout">
           <motion.span
             key={count}
@@ -97,7 +179,6 @@ export function FoodCard({ food, count, onAdd, onRemove, goalReached = false }: 
         {/* Plus */}
         <motion.button
           onClick={handleAdd}
-          animate={{ scale: plusBurst ? 0.76 : 1 }}
           whileHover={!goalReached ? { backgroundColor: "#E3F7E8" } : {}}
           transition={{ type: "spring", stiffness: 520, damping: 17 }}
           className="w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold select-none"
