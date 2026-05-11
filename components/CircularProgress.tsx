@@ -39,7 +39,7 @@ export function CircularProgress({ current, goal, stackLayers }: CircularProgres
   const arcColor =
     pct >= 1     ? "#4CAF50"
     : pct >= 0.5 ? "#FFC107"
-    : "#C8C8C8";
+    : "#A0A0A0";
 
   // Deduplicate emojis — show up to 4 unique food types currently on plate
   const uniqueEmojis: string[] = [];
@@ -86,14 +86,16 @@ export function CircularProgress({ current, goal, stackLayers }: CircularProgres
             strokeLinecap="round"
             strokeDasharray={`${ARC_LEN} ${GAP_LEN}`}
             transform={ROTATE}
+            initial={{ strokeDashoffset: ARC_LEN, stroke: "#A0A0A0", opacity: 0 }}
             animate={{
               strokeDashoffset: dashOffset,
-              stroke: arcColor,
+              stroke:   arcColor,
+              opacity:  pct > 0 ? 1 : 0,
             }}
-            initial={false}
             transition={{
               strokeDashoffset: { type: "spring", stiffness: 180, damping: 24 },
               stroke:           { duration: 0.45, ease: "easeInOut" },
+              opacity:          { duration: 0.25 },
             }}
           />
         </svg>

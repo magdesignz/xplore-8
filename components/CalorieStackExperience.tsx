@@ -73,6 +73,7 @@ export default function CalorieStackExperience() {
   );
 
   const handleAdd = useCallback((food: FoodItem) => {
+    if (totalCalories >= CALORIE_GOAL) return;
     counterRef.current += 1;
     const instanceId = `${food.id}-${counterRef.current}`;
     setStackLayers((prev) => [
@@ -87,7 +88,7 @@ export default function CalorieStackExperience() {
       },
     ]);
     setFoodCounts((prev) => ({ ...prev, [food.id]: (prev[food.id] || 0) + 1 }));
-  }, []);
+  }, [totalCalories]);
 
   const handleRemove = useCallback((food: FoodItem) => {
     setStackLayers((prev) => {
@@ -223,8 +224,14 @@ export default function CalorieStackExperience() {
             {/* Divider */}
             <div style={{ height: 1, background: "#EFEFEF", margin: "0 16px" }} />
 
-            {/* Stack area — overflow:hidden keeps tower from bleeding past divider */}
-            <div className="px-4 pt-3 pb-3 flex-1 overflow-hidden relative">
+            {/* Stack area — gradient mask fades tower softly at divider */}
+            <div
+              className="px-4 pt-3 pb-3 flex-1 overflow-hidden"
+              style={{
+                maskImage:       "linear-gradient(to bottom, transparent 0%, black 28%, black 100%)",
+                WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, black 28%, black 100%)",
+              }}
+            >
               <StackArea stackLayers={stackLayers} />
             </div>
           </motion.div>
@@ -275,6 +282,7 @@ export default function CalorieStackExperience() {
                       count={foodCounts[food.id] || 0}
                       onAdd={()    => handleAdd(food)}
                       onRemove={() => handleRemove(food)}
+                      goalReached={isGoalReached}
                     />
                   </motion.div>
                 ))}

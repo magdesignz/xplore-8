@@ -9,13 +9,15 @@ interface FoodCardProps {
   count: number;
   onAdd: () => void;
   onRemove: () => void;
+  goalReached?: boolean;
 }
 
-export function FoodCard({ food, count, onAdd, onRemove }: FoodCardProps) {
+export function FoodCard({ food, count, onAdd, onRemove, goalReached = false }: FoodCardProps) {
   const [plusBurst,  setPlusBurst]  = useState(false);
   const [minusBurst, setMinusBurst] = useState(false);
 
   const handleAdd = () => {
+    if (goalReached) return;
     setPlusBurst(true);
     setTimeout(() => setPlusBurst(false), 140);
     onAdd();
@@ -96,15 +98,17 @@ export function FoodCard({ food, count, onAdd, onRemove }: FoodCardProps) {
         <motion.button
           onClick={handleAdd}
           animate={{ scale: plusBurst ? 0.76 : 1 }}
-          whileHover={{ backgroundColor: "#E3F7E8" }}
+          whileHover={!goalReached ? { backgroundColor: "#E3F7E8" } : {}}
           transition={{ type: "spring", stiffness: 520, damping: 17 }}
-          className="w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold select-none cursor-pointer"
+          className="w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold select-none"
           style={{
             backgroundColor: "#EFEFEF",
-            color: "#4CAF50",
+            color:  goalReached ? "#CCCCCC" : "#4CAF50",
+            cursor: goalReached ? "not-allowed" : "pointer",
             lineHeight: 1,
           }}
           aria-label={`Add ${food.name}`}
+          aria-disabled={goalReached}
         >
           +
         </motion.button>

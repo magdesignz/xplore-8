@@ -4,7 +4,7 @@ import { motion } from "motion/react";
 import type { StackLayer as StackLayerData } from "@/lib/types";
 
 // How many px each older card peeks out below the one above it.
-export const STACK_STEP = 14;
+export const STACK_STEP = 9;
 // Approximate rendered height of one card (used to size the container).
 export const CARD_H = 56;
 
