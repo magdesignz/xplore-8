@@ -283,18 +283,21 @@ export default function CalorieStackExperience() {
         {draggingFood && (
           <motion.div
             key="drag-ghost"
-            initial={{ scale: 0.6, opacity: 0 }}
+            initial={{ scale: 0.4, opacity: 0 }}
             animate={{ scale: 1,   opacity: 1 }}
-            exit={{    scale: 0.6, opacity: 0, transition: { duration: 0.12 } }}
-            transition={{ type: "spring", stiffness: 500, damping: 28 }}
+            exit={{    scale: 0.4, opacity: 0, transition: { duration: 0.12 } }}
+            transition={{
+              scale:   { type: "spring", stiffness: 650, damping: 12 },
+              opacity: { duration: 0.06 },
+            }}
             className="pointer-events-none fixed flex items-center justify-center select-none"
             style={{
-              width:  70,
-              height: 70,
-              left:   dragPos.x - 35,
-              top:    dragPos.y - 35,
+              width:  120,
+              height: 120,
+              left:   dragPos.x - 60,
+              top:    dragPos.y - 60,
               zIndex: 99999,
-              fontSize: 48,
+              fontSize: 80,
               filter: isDragOverPlate
                 ? "drop-shadow(0px 0px 14px rgba(76,175,80,0.6))"
                 : "drop-shadow(0px 8px 18px rgba(0,0,0,0.28))",

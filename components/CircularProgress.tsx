@@ -3,42 +3,36 @@
 import { forwardRef } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "motion/react";
-import { PieChart, Pie, Cell } from "recharts";
-import { ChartContainer, type ChartConfig } from "@/components/ui/chart";
 import { cn } from "@/lib/utils";
 import type { StackLayer } from "@/lib/types";
 
-interface CircularProgressProps {
-  current: number;
-  goal: number;
-  stackLayers: StackLayer[];
-  isAnyDragging?: boolean;
-  isDragOverPlate?: boolean;
-  className?: string;
-}
+// ── Ring geometry extracted from Circle path.svg (viewBox 0 0 177 177) ────────
+const VB        = 177;                                // viewBox size
+const CX        = 88.5;                               // circle center
+const CY        = 88.5;
+const OUTER_R   = 88.5;                               // outer radius of ring
+const INNER_R   = 76.9188;                            // inner radius  (88.5 - 11.5812)
+const MID_R     = (OUTER_R + INNER_R) / 2;           // 82.7094 — stroke drawn here
+const RING_W    = OUTER_R - INNER_R;                  // 11.5812 — stroke width
+const CIRC      = 2 * Math.PI * MID_R;               // ≈ 519.66 — full circumference
 
-const CHART_SIZE = 196;
-const OUTER_R    = 91;
-const INNER_R    = 84;
-// plate radius = INNER_R - 10 (10px gap on every side) = 74 → diameter 148
-const PLATE_SIZE = 148;
+// ── Rendered dimensions ────────────────────────────────────────────────────────
+const SVG_SIZE  = 196;                                // CSS px the SVG occupies
+const SCALE     = SVG_SIZE / VB;                      // 196/177 ≈ 1.107
+// Inner radius in CSS px at render size, then subtract 10 px gap each side
+const PLATE_SIZE = Math.round((INNER_R * SCALE - 10) * 2); // ≈ 150 px
 
-const chartConfig: ChartConfig = {
-  progress: { label: "Progress" },
-  track:    { label: "Track"    },
-};
-
-// Deterministic emoji positions on the plate (up to 6)
+// ── Emoji slots on the plate ───────────────────────────────────────────────────
 const EMOJI_SLOTS = [
-  { x:  0,   y:  0,  r: -6  },
-  { x: -13,  y: -11, r:  8  },
-  { x:  13,  y: -11, r: -5  },
-  { x: -12,  y:  11, r:  6  },
-  { x:  12,  y:  11, r: -9  },
-  { x:   0,  y: -18, r:  4  },
+  { x:  0,   y:  0,  r: -6 },
+  { x: -14,  y: -13, r:  8 },
+  { x:  14,  y: -13, r: -5 },
+  { x: -13,  y:  13, r:  6 },
+  { x:  13,  y:  13, r: -9 },
+  { x:   0,  y: -20, r:  4 },
 ];
 
-// Deterministic confetti particles — no Math.random()
+// ── Deterministic confetti ─────────────────────────────────────────────────────
 const CONFETTI = [
   { id: 0, color: "#4CAF50", tx:  56, ty: -46 },
   { id: 1, color: "#FFC107", tx:  72, ty: -12 },
@@ -74,6 +68,17 @@ function ConfettiBurst() {
   );
 }
 
+// ── Component ──────────────────────────────────────────────────────────────────
+
+interface CircularProgressProps {
+  current: number;
+  goal: number;
+  stackLayers: StackLayer[];
+  isAnyDragging?: boolean;
+  isDragOverPlate?: boolean;
+  className?: string;
+}
+
 export const CircularProgress = forwardRef<HTMLDivElement, CircularProgressProps>(
   function CircularProgress(
     { current, goal, stackLayers, isAnyDragging, isDragOverPlate, className },
@@ -87,14 +92,9 @@ export const CircularProgress = forwardRef<HTMLDivElement, CircularProgressProps
       : pct >= 0.5 ? "#FFC107"
       : "#A0A0A0";
 
-    const progressVal  = pct * 100;
-    const remainingVal = 100 - progressVal;
-    const data = [
-      { name: "progress",  value: progressVal  },
-      { name: "remaining", value: remainingVal },
-    ];
+    // Dash offset: CIRC = empty, 0 = full
+    const dashOffset = CIRC * (1 - pct);
 
-    // Up to 6 unique emojis, most recent first
     const uniqueEmojis: string[] = [];
     for (const layer of [...stackLayers].reverse()) {
       if (!uniqueEmojis.includes(layer.emoji)) uniqueEmojis.push(layer.emoji);
@@ -102,70 +102,63 @@ export const CircularProgress = forwardRef<HTMLDivElement, CircularProgressProps
     }
 
     return (
-      <div className={cn("flex flex-col items-center gap-0", className)}>
+      <div className={cn("flex flex-col items-center", className)}>
 
-        {/* ── Ring + plate ── */}
+        {/* ── Outer container ── */}
         <div
           className="relative flex items-center justify-center"
-          style={{ width: CHART_SIZE, height: CHART_SIZE }}
+          style={{ width: SVG_SIZE, height: SVG_SIZE }}
         >
-          {/* Pulse wrapper — animates when dragging */}
-          <motion.div
-            className="absolute inset-0"
+
+          {/* ── SVG ring (viewBox matches Circle path.svg exactly) ── */}
+          <motion.svg
+            width={SVG_SIZE}
+            height={SVG_SIZE}
+            viewBox={`0 0 ${VB} ${VB}`}
+            className="absolute inset-0 overflow-visible"
+            style={{ zIndex: 1 }}
             animate={
               isAnyDragging
-                ? { scale: [1, 1.025, 1], transition: { repeat: Infinity, duration: 1.3, ease: "easeInOut" } }
+                ? { scale: [1, 1.025, 1] }
                 : { scale: 1 }
             }
+            transition={
+              isAnyDragging
+                ? { repeat: Infinity, duration: 1.3, ease: "easeInOut" }
+                : {}
+            }
           >
-            <ChartContainer
-              config={chartConfig}
-              className="absolute inset-0"
-              initialDimension={{ width: CHART_SIZE, height: CHART_SIZE }}
-            >
-              <PieChart width={CHART_SIZE} height={CHART_SIZE}>
-                {/* Grey track — always full 360° */}
-                <Pie
-                  data={[{ value: 1 }]}
-                  cx={CHART_SIZE / 2 - 1}
-                  cy={CHART_SIZE / 2 - 1}
-                  startAngle={90}
-                  endAngle={-270}
-                  innerRadius={INNER_R}
-                  outerRadius={OUTER_R}
-                  dataKey="value"
-                  strokeWidth={0}
-                  isAnimationActive={false}
-                >
-                  <Cell fill="#E4E4E4" />
-                </Pie>
+            {/* Grey track — full 360°, matches Circle path.svg geometry */}
+            <circle
+              cx={CX} cy={CY} r={MID_R}
+              fill="none"
+              stroke="#E4E4E4"
+              strokeWidth={RING_W}
+            />
+            {/* Subtle white edge borders (as in Circle path.svg stroke="white") */}
+            <circle cx={CX} cy={CY} r={OUTER_R - 0.8} fill="none" stroke="white" strokeWidth="1.6" />
+            <circle cx={CX} cy={CY} r={INNER_R + 0.8} fill="none" stroke="white" strokeWidth="1.6" />
 
-                {/* Coloured progress arc */}
-                {pct > 0 && (
-                  <Pie
-                    data={data}
-                    cx={CHART_SIZE / 2 - 1}
-                    cy={CHART_SIZE / 2 - 1}
-                    startAngle={90}
-                    endAngle={-270}
-                    innerRadius={INNER_R}
-                    outerRadius={OUTER_R}
-                    dataKey="value"
-                    strokeWidth={0}
-                    isAnimationActive
-                    animationBegin={0}
-                    animationDuration={550}
-                    animationEasing="ease-out"
-                  >
-                    <Cell fill={arcColor} />
-                    <Cell fill="transparent" />
-                  </Pie>
-                )}
-              </PieChart>
-            </ChartContainer>
-          </motion.div>
+            {/* Animated progress arc — sweeps 0 → 360° clockwise from top */}
+            {pct > 0 && (
+              <motion.circle
+                cx={CX} cy={CY} r={MID_R}
+                fill="none"
+                strokeWidth={RING_W}
+                strokeLinecap="round"
+                strokeDasharray={CIRC}
+                initial={{ strokeDashoffset: CIRC, stroke: "#A0A0A0" }}
+                animate={{ strokeDashoffset: dashOffset, stroke: arcColor }}
+                transition={{
+                  strokeDashoffset: { type: "spring", stiffness: 160, damping: 26 },
+                  stroke:           { duration: 0.45, ease: "easeInOut" },
+                }}
+                transform={`rotate(-90 ${CX} ${CY})`}
+              />
+            )}
+          </motion.svg>
 
-          {/* Drop-zone glow when hovering over plate */}
+          {/* Drop-zone glow ring */}
           <AnimatePresence>
             {isDragOverPlate && (
               <motion.div
@@ -173,12 +166,16 @@ export const CircularProgress = forwardRef<HTMLDivElement, CircularProgressProps
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 className="absolute inset-0 rounded-full pointer-events-none"
-                style={{ boxShadow: "0 0 0 4px rgba(76,175,80,0.28), 0 0 24px 8px rgba(76,175,80,0.14)" }}
+                style={{
+                  boxShadow:
+                    "0 0 0 3px rgba(76,175,80,0.35), 0 0 28px 10px rgba(76,175,80,0.18)",
+                  zIndex: 3,
+                }}
               />
             )}
           </AnimatePresence>
 
-          {/* ── Plate — drop zone (ref forwarded here) ── */}
+          {/* ── Plate — centered inside ring, ref = drop zone ── */}
           <motion.div
             ref={ref}
             className="relative flex items-center justify-center"
@@ -194,7 +191,7 @@ export const CircularProgress = forwardRef<HTMLDivElement, CircularProgressProps
               priority
             />
 
-            {/* Food emojis clustered on plate */}
+            {/* Food emojis on plate */}
             <div
               className="absolute inset-0 flex items-center justify-center"
               style={{ pointerEvents: "none" }}
@@ -206,8 +203,10 @@ export const CircularProgress = forwardRef<HTMLDivElement, CircularProgressProps
                     initial={{ scale: 0, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     exit={{    scale: 0, opacity: 0 }}
-                    transition={{ type: "spring", stiffness: 500, damping: 22, delay: i * 0.03 }}
-                    className="absolute text-[13px] leading-none select-none"
+                    transition={{
+                      type: "spring", stiffness: 500, damping: 22, delay: i * 0.03,
+                    }}
+                    className="absolute text-[15px] leading-none select-none"
                     style={{
                       transform: `translate(${EMOJI_SLOTS[i].x}px, ${EMOJI_SLOTS[i].y}px) rotate(${EMOJI_SLOTS[i].r}deg)`,
                     }}
@@ -219,21 +218,21 @@ export const CircularProgress = forwardRef<HTMLDivElement, CircularProgressProps
             </div>
           </motion.div>
 
-          {/* Confetti burst on goal */}
+          {/* Confetti */}
           <AnimatePresence>
             {isGoalReached && <ConfettiBurst key="confetti" />}
           </AnimatePresence>
         </div>
 
-        {/* ── Goal achieved text ── */}
+        {/* Goal achieved */}
         <AnimatePresence>
           {isGoalReached && (
             <motion.div
-              initial={{ opacity: 0, y: 8  }}
-              animate={{ opacity: 1, y: 0  }}
-              exit={{    opacity: 0, y: 4  }}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{    opacity: 0, y: 4 }}
               transition={{ type: "spring", stiffness: 280, damping: 22 }}
-              className="text-[11px] font-semibold mt-0.5"
+              className="text-[11px] font-semibold mt-1"
               style={{ color: "#4CAF50" }}
             >
               Calorie achieved — enjoy 🎉
