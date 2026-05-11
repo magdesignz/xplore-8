@@ -224,21 +224,6 @@ export const CircularProgress = forwardRef<HTMLDivElement, CircularProgressProps
           </AnimatePresence>
         </div>
 
-        {/* Goal achieved */}
-        <AnimatePresence>
-          {isGoalReached && (
-            <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{    opacity: 0, y: 4 }}
-              transition={{ type: "spring", stiffness: 280, damping: 22 }}
-              className="text-[11px] font-semibold mt-1"
-              style={{ color: "#4CAF50" }}
-            >
-              Calorie achieved — enjoy 🎉
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
     );
   }
