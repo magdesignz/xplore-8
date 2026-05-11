@@ -15,9 +15,9 @@ interface CircularProgressProps {
 }
 
 const CHART_SIZE  = 196;
-const INNER_R     = 72;  // inner radius of the donut — plate sits inside this
-const OUTER_R     = 90;  // outer radius
-const PLATE_SIZE  = INNER_R * 2 - 8; // 8px total gap (4px each side)
+const OUTER_R     = 91;  // outer edge — 7px from SVG boundary
+const INNER_R     = 84;  // inner edge — ring is 7px thick (slim)
+const PLATE_SIZE  = INNER_R * 2 - 4; // 2px gap each side between plate and ring
 
 const chartConfig: ChartConfig = {
   progress: { label: "Progress" },
