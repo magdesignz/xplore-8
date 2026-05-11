@@ -220,7 +220,7 @@ export default function CalorieStackExperience() {
                 {activeMeal}
               </div>
               <div className="text-xs mt-0.5" style={{ color: "#8A8A8A" }}>
-                Tap + to add items to your plate
+                Drag / Tap + to add items to your plate
               </div>
             </motion.div>
 
