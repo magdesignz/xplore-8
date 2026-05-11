@@ -13,10 +13,10 @@ export const MEAL_ICONS: Record<MealCategory, string> = {
 
 export const MEAL_FOODS: Record<MealCategory, FoodItem[]> = {
   Breakfast: [
-    { id: "avocado-toast", name: "Avocado Toast",  calories: 320, emoji: "🥑", color: "#E8F5E9" },
-    { id: "eggs",          name: "Scrambled Eggs",  calories: 180, emoji: "🍳", color: "#FFF8E1" },
-    { id: "smoothie",      name: "Berry Smoothie",  calories: 240, emoji: "🫐", color: "#F3E5F5" },
-    { id: "granola",       name: "Granola Bowl",    calories: 410, emoji: "🌾", color: "#FFF3E0" },
+    { id: "salad",         name: "Garden Salad",    calories: 190, emoji: "🥗", color: "#E8F5E9" },
+    { id: "chicken-bowl",  name: "Chicken Bowl",    calories: 520, emoji: "🍗", color: "#FFF8E1" },
+    { id: "sandwich",      name: "Turkey Sandwich", calories: 380, emoji: "🥪", color: "#FFF3E0" },
+    { id: "pancake",       name: "Pancake",         calories: 200, emoji: "🥞", color: "#FCE4EC" },
   ],
   Lunch: [
     { id: "chicken-bowl",  name: "Chicken Bowl",    calories: 520, emoji: "🍗", color: "#FFF8E1" },

@@ -8,7 +8,7 @@ interface StackAreaProps {
   stackLayers: StackLayerData[];
 }
 
-const MAX_VISIBLE = 5;
+const MAX_VISIBLE = 4;
 
 export function StackArea({ stackLayers }: StackAreaProps) {
   // Keep only the most-recently added MAX_VISIBLE items; newest = last in array

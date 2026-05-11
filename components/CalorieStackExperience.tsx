@@ -105,7 +105,6 @@ export default function CalorieStackExperience() {
   }, []);
 
   const currentFoods = MEAL_FOODS[activeMeal];
-  const stackCount   = stackLayers.length;
 
   // ── SSR shell ─────────────────────────────────────────────────────────────
   if (!mounted) {
@@ -136,7 +135,7 @@ export default function CalorieStackExperience() {
         <MealTabs activeMeal={activeMeal} onMealChange={handleMealChange} />
 
         {/* ─── Main row ─── */}
-        <div className="flex gap-6 w-full items-start">
+        <div className="flex gap-6 w-full items-center">
 
           {/* ── LEFT: calorie card ── */}
           <motion.div
@@ -144,7 +143,6 @@ export default function CalorieStackExperience() {
             style={{
               width:      314,
               minWidth:   314,
-              minHeight:  363,
               background: "#F8F8F8",
               border:     "1.5px solid #FFFFFF",
               boxShadow:  "0px 4px 16px rgba(0,0,0,0.07)",
@@ -191,8 +189,8 @@ export default function CalorieStackExperience() {
             {/* Divider */}
             <div style={{ height: 1, background: "#EFEFEF", margin: "0 16px" }} />
 
-            {/* Stack area */}
-            <div className="px-4 pt-3 pb-4 flex-1">
+            {/* Stack area — fixed 74 px from divider to card bottom */}
+            <div className="px-4 py-1" style={{ height: 74, overflow: "visible" }}>
               <StackArea stackLayers={stackLayers} />
             </div>
           </motion.div>
@@ -212,7 +210,7 @@ export default function CalorieStackExperience() {
                 {activeMeal}
               </div>
               <div className="text-xs mt-0.5" style={{ color: "#8A8A8A" }}>
-                Drag the emoji to the plate or tap +
+                Tap + to add items to your plate
               </div>
             </motion.div>
 
@@ -250,30 +248,6 @@ export default function CalorieStackExperience() {
               </motion.div>
             </AnimatePresence>
 
-            {/* Live summary pill */}
-            <AnimatePresence>
-              {stackCount > 0 && (
-                <motion.div
-                  initial={{ opacity: 0, y: 12, scale: 0.94 }}
-                  animate={{ opacity: 1, y: 0,  scale: 1    }}
-                  exit={{    opacity: 0, y: 8,  scale: 0.94 }}
-                  transition={{ type: "spring", stiffness: 300, damping: 22 }}
-                  className="mt-1 px-4 py-3 rounded-[20px] flex items-center justify-between"
-                  style={{
-                    background: "#F8F8F8",
-                    border:     "1.5px solid #FFFFFF",
-                    boxShadow:  "0px 4px 12px rgba(0,0,0,0.055)",
-                  }}
-                >
-                  <div className="text-sm font-medium" style={{ color: "#8A8A8A" }}>
-                    {stackCount} item{stackCount !== 1 ? "s" : ""} on plate
-                  </div>
-                  <div className="text-sm font-semibold tabular-nums" style={{ color: "#1A1A1A" }}>
-                    <AnimatedNumber value={totalCalories} /> / {CALORIE_GOAL}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
           </div>
         </div>
       </div>
@@ -292,12 +266,12 @@ export default function CalorieStackExperience() {
             }}
             className="pointer-events-none fixed flex items-center justify-center select-none"
             style={{
-              width:  120,
-              height: 120,
-              left:   dragPos.x - 60,
-              top:    dragPos.y - 60,
+              width:  170,
+              height: 170,
+              left:   dragPos.x - 85,
+              top:    dragPos.y - 85,
               zIndex: 99999,
-              fontSize: 80,
+              fontSize: 110,
               filter: isDragOverPlate
                 ? "drop-shadow(0px 0px 14px rgba(76,175,80,0.6))"
                 : "drop-shadow(0px 8px 18px rgba(0,0,0,0.28))",
