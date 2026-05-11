@@ -1,0 +1,330 @@
+"use client";
+
+import { useState, useRef, useCallback, useEffect } from "react";
+import {
+  motion,
+  AnimatePresence,
+  useAnimation,
+  useSpring,
+  useTransform,
+} from "motion/react";
+
+import { MealTabs }          from "./MealTabs";
+import { FoodCard }          from "./FoodCard";
+import { StackArea }         from "./StackArea";
+import { CircularProgress }  from "./CircularProgress";
+
+import { CALORIE_GOAL, MEAL_FOODS } from "@/lib/data";
+import type { MealCategory, FoodItem, StackLayer } from "@/lib/types";
+
+// ─── Animated rolling counter ────────────────────────────────────────────────
+
+function AnimatedNumber({ value }: { value: number }) {
+  const spring  = useSpring(value, { stiffness: 260, damping: 22 });
+  const display = useTransform(spring, (v: number) => Math.round(v).toString());
+
+  useEffect(() => {
+    spring.set(value);
+  }, [value, spring]);
+
+  return <motion.span>{display}</motion.span>;
+}
+
+// ─── Root experience ─────────────────────────────────────────────────────────
+
+export default function CalorieStackExperience() {
+  // ── Mount guard (prevents SSR opacity:0 blank-page issue) ────────────────
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  // ── Core state ───────────────────────────────────────────────────────────
+  const [activeMeal, setActiveMeal] = useState<MealCategory>("Breakfast");
+  const [stackLayers, setStackLayers] = useState<StackLayer[]>([]);
+  const [foodCounts, setFoodCounts]   = useState<Record<string, number>>({});
+  const counterRef = useRef(0);
+
+  // ── Goal celebration ─────────────────────────────────────────────────────
+  const bounceControls = useAnimation();
+  const prevGoalRef    = useRef(false);
+
+  const totalCalories = stackLayers.reduce((sum, l) => sum + l.calories, 0);
+  const pct           = Math.min(totalCalories / CALORIE_GOAL, 1);
+  const isGoalReached = totalCalories >= CALORIE_GOAL;
+
+  useEffect(() => {
+    if (isGoalReached && !prevGoalRef.current) {
+      bounceControls.start({
+        scale: [1, 1.09, 0.95, 1.05, 1],
+        transition: { duration: 0.6, ease: "easeInOut" },
+      });
+    }
+    prevGoalRef.current = isGoalReached;
+  }, [isGoalReached, bounceControls]);
+
+  // ── Handlers ─────────────────────────────────────────────────────────────
+  const handleMealChange = useCallback(
+    (meal: MealCategory) => {
+      if (meal === activeMeal) return;
+      setActiveMeal(meal);
+      setStackLayers([]);
+      setFoodCounts({});
+    },
+    [activeMeal]
+  );
+
+  const handleAdd = useCallback((food: FoodItem) => {
+    counterRef.current += 1;
+    const instanceId = `${food.id}-${counterRef.current}`;
+    setStackLayers((prev) => [
+      ...prev,
+      {
+        instanceId,
+        foodId:   food.id,
+        name:     food.name,
+        calories: food.calories,
+        emoji:    food.emoji,
+        color:    food.color,
+      },
+    ]);
+    setFoodCounts((prev) => ({ ...prev, [food.id]: (prev[food.id] || 0) + 1 }));
+  }, []);
+
+  const handleRemove = useCallback((food: FoodItem) => {
+    setStackLayers((prev) => {
+      // Remove the most-recently added instance of this food type.
+      const ri = [...prev].reverse().findIndex((l) => l.foodId === food.id);
+      if (ri === -1) return prev;
+      const realIdx = prev.length - 1 - ri;
+      return prev.filter((_, i) => i !== realIdx);
+    });
+    setFoodCounts((prev) => ({
+      ...prev,
+      [food.id]: Math.max(0, (prev[food.id] || 0) - 1),
+    }));
+  }, []);
+
+  const currentFoods = MEAL_FOODS[activeMeal];
+  const stackCount   = stackLayers.length;
+
+  // ── SSR shell (prevents hydration flash) ─────────────────────────────────
+  if (!mounted) {
+    return (
+      <div
+        className="min-h-screen w-full"
+        style={{ background: "#EDEDED" }}
+      />
+    );
+  }
+
+  // ── Full UI ───────────────────────────────────────────────────────────────
+  return (
+    <div
+      className="min-h-screen w-full flex flex-col items-center justify-center relative"
+      style={{ background: "#EDEDED", overflowX: "hidden" }}
+    >
+      {/* ── Background grid ── */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          backgroundImage: `
+            linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px)
+          `,
+          backgroundSize: "120px 120px",
+        }}
+      />
+
+      {/* ── Composition canvas ── */}
+      <div className="relative z-10 flex flex-col items-center gap-6 w-full max-w-[920px] px-6 py-10">
+
+        {/* ─── 1. Meal selector ─── */}
+        <MealTabs activeMeal={activeMeal} onMealChange={handleMealChange} />
+
+        {/* ─── 2. Main row ─── */}
+        <div className="flex gap-6 w-full items-start">
+
+          {/* ── LEFT: calorie stack card ── */}
+          <motion.div
+            className="flex flex-col rounded-[24px]"
+            style={{
+              width:      314,
+              minWidth:   314,
+              minHeight:  363,
+              background: "#F8F8F8",
+              border:     "1.5px solid #FFFFFF",
+              boxShadow:  "0px 4px 16px rgba(0,0,0,0.07)",
+            }}
+            initial={{ opacity: 0, x: -28 }}
+            animate={{ opacity: 1, x: 0   }}
+            transition={{ type: "spring", stiffness: 260, damping: 24, delay: 0.1 }}
+          >
+            {/* Card header */}
+            <div className="px-4 pt-4 pb-3 flex flex-col gap-2">
+
+              {/* Goal pill + live counter row */}
+              <div className="flex items-center justify-between">
+                <div
+                  className="px-3 py-1 rounded-full text-[11px] font-semibold"
+                  style={{ background: "#EFEFEF", color: "#8A8A8A" }}
+                >
+                  Goal: {CALORIE_GOAL} Cal
+                </div>
+
+                <motion.div
+                  animate={bounceControls}
+                  className="flex items-baseline gap-1 tabular-nums"
+                >
+                  <span className="text-[22px] font-bold leading-none" style={{ color: "#1A1A1A" }}>
+                    <AnimatedNumber value={totalCalories} />
+                  </span>
+                  <span className="text-xs font-medium" style={{ color: "#8A8A8A" }}>
+                    Cal
+                  </span>
+                </motion.div>
+              </div>
+
+              {/* Circular arc progress ring + plate */}
+              <div className="flex justify-center py-1">
+                <CircularProgress
+                  current={totalCalories}
+                  goal={CALORIE_GOAL}
+                  stackLayers={stackLayers}
+                />
+              </div>
+
+              {/* Goal achieved banner */}
+              <AnimatePresence>
+                {isGoalReached && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 6,  height: 0 }}
+                    animate={{ opacity: 1, y: 0,  height: "auto" }}
+                    exit={{    opacity: 0, y: 3,  height: 0 }}
+                    transition={{ type: "spring", stiffness: 260, damping: 22 }}
+                    className="overflow-hidden"
+                  >
+                    <div
+                      className="flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1.5 rounded-xl"
+                      style={{ background: "#F0FFF4", color: "#4CAF50" }}
+                    >
+                      <motion.span
+                        initial={{ scale: 0, rotate: -20 }}
+                        animate={{ scale: 1, rotate: 0   }}
+                        transition={{ type: "spring", stiffness: 400, damping: 14, delay: 0.12 }}
+                      >
+                        ✓
+                      </motion.span>
+                      Calorie goal achieved — enjoy your day
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Divider */}
+            <div style={{ height: 1, background: "#EFEFEF", margin: "0 16px" }} />
+
+            {/* Stack area — overflow:hidden keeps tower from bleeding past divider */}
+            <div className="px-4 pt-3 pb-3 flex-1 overflow-hidden relative">
+              <StackArea stackLayers={stackLayers} />
+            </div>
+          </motion.div>
+
+          {/* ── RIGHT: food selection panel ── */}
+          <div className="flex flex-col gap-3" style={{ width: 290, minWidth: 290 }}>
+
+            {/* Meal label */}
+            <motion.div
+              key={`label-${activeMeal}`}
+              initial={{ opacity: 0, x: 16 }}
+              animate={{ opacity: 1, x: 0  }}
+              transition={{ type: "spring", stiffness: 300, damping: 24 }}
+              className="px-1"
+            >
+              <div className="text-base font-semibold" style={{ color: "#1A1A1A" }}>
+                {activeMeal}
+              </div>
+              <div className="text-xs mt-0.5" style={{ color: "#8A8A8A" }}>
+                Tap + to add items to your plate
+              </div>
+            </motion.div>
+
+            {/* Food cards — cross-fade when meal changes */}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={`cards-${activeMeal}`}
+                className="flex flex-col gap-3"
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0  }}
+                exit={{    opacity: 0, y: -10 }}
+                transition={{ type: "spring", stiffness: 280, damping: 24 }}
+              >
+                {currentFoods.map((food, i) => (
+                  <motion.div
+                    key={food.id}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0  }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 280,
+                      damping: 22,
+                      delay: i * 0.06,
+                    }}
+                  >
+                    <FoodCard
+                      food={food}
+                      count={foodCounts[food.id] || 0}
+                      onAdd={()    => handleAdd(food)}
+                      onRemove={() => handleRemove(food)}
+                    />
+                  </motion.div>
+                ))}
+              </motion.div>
+            </AnimatePresence>
+
+            {/* Live summary pill */}
+            <AnimatePresence>
+              {stackCount > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 12, scale: 0.94 }}
+                  animate={{ opacity: 1, y: 0,  scale: 1    }}
+                  exit={{    opacity: 0, y: 8,  scale: 0.94 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 22 }}
+                  className="mt-1 px-4 py-3 rounded-[20px] flex items-center justify-between"
+                  style={{
+                    background: "#F8F8F8",
+                    border:     "1.5px solid #FFFFFF",
+                    boxShadow:  "0px 4px 12px rgba(0,0,0,0.055)",
+                  }}
+                >
+                  <div className="text-sm font-medium" style={{ color: "#8A8A8A" }}>
+                    {stackCount} item{stackCount !== 1 ? "s" : ""} on plate
+                  </div>
+
+                  <div className="flex items-center gap-1.5">
+                    {/* Status dot — colour-synced with the bar */}
+                    <motion.div
+                      className="w-2 h-2 rounded-full"
+                      animate={{
+                        backgroundColor:
+                          pct >= 1     ? "#4CAF50"
+                          : pct >= 0.5 ? "#FFC107"
+                          : "#C8C8C8",
+                      }}
+                      transition={{ duration: 0.4 }}
+                    />
+                    <div
+                      className="text-sm font-semibold tabular-nums"
+                      style={{ color: "#1A1A1A" }}
+                    >
+                      <AnimatedNumber value={totalCalories} /> / {CALORIE_GOAL}
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
