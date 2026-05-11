@@ -144,7 +144,7 @@ export default function CalorieStackExperience() {
         <MealTabs activeMeal={activeMeal} onMealChange={handleMealChange} />
 
         {/* ─── Main row ─── */}
-        <div className="flex gap-6 w-full items-center">
+        <div className="flex gap-6 items-center">
 
           {/* ── LEFT: calorie card ── */}
           <motion.div
