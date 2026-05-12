@@ -51,8 +51,9 @@ export default function CalorieStackExperience() {
   const plateRef = useRef<HTMLDivElement>(null);
 
   // ── Calorie / goal ───────────────────────────────────────────────────────
-  const bounceControls = useAnimation();
-  const prevGoalRef    = useRef(false);
+  const bounceControls  = useAnimation();
+  const prevGoalRef     = useRef(false);
+  const [showCongrats, setShowCongrats] = useState(false);
 
   const totalCalories = stackLayers.reduce((sum, l) => sum + l.calories, 0);
   const isGoalReached = totalCalories >= CALORIE_GOAL;
@@ -63,6 +64,16 @@ export default function CalorieStackExperience() {
         scale: [1, 1.09, 0.95, 1.05, 1],
         transition: { duration: 0.6, ease: "easeInOut" },
       });
+      setShowCongrats(true);
+      // Auto-dismiss after 2.8 s then reset so the user can start fresh
+      const t = setTimeout(() => {
+        setShowCongrats(false);
+        setTimeout(() => {
+          setStackLayers([]);
+          setFoodCounts({});
+        }, 400); // wait for exit animation before clearing
+      }, 2800);
+      return () => clearTimeout(t);
     }
     prevGoalRef.current = isGoalReached;
   }, [isGoalReached, bounceControls]);
@@ -252,6 +263,50 @@ export default function CalorieStackExperience() {
           </div>
         </div>
       </div>
+
+      {/* ── Congratulations modal ── */}
+      <AnimatePresence>
+        {showCongrats && (
+          <motion.div
+            key="congrats-backdrop"
+            className="fixed inset-0 flex items-center justify-center"
+            style={{ zIndex: 1000, backdropFilter: "blur(8px)", background: "rgba(0,0,0,0.18)" }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+          >
+            <motion.div
+              className="flex flex-col items-center gap-3"
+              style={{
+                background: "#F8F8F8",
+                border: "1.5px solid rgba(255,255,255,0.9)",
+                borderRadius: 28,
+                boxShadow: "0px 24px 56px rgba(0,0,0,0.15)",
+                padding: "36px 44px",
+              }}
+              initial={{ scale: 0.72, opacity: 0, y: 20 }}
+              animate={{ scale: 1,    opacity: 1, y: 0  }}
+              exit={{    scale: 0.82, opacity: 0, y: 12 }}
+              transition={{ type: "spring", stiffness: 460, damping: 28 }}
+            >
+              <motion.div
+                className="text-5xl select-none"
+                animate={{ rotate: [0, -10, 10, -7, 7, 0], scale: [1, 1.15, 1] }}
+                transition={{ duration: 0.65, ease: "easeInOut", delay: 0.1 }}
+              >
+                🎉
+              </motion.div>
+              <div className="text-[20px] font-bold text-center leading-snug" style={{ color: "#1A1A1A" }}>
+                Congratulations.
+              </div>
+              <div className="text-[15px] font-medium text-center" style={{ color: "#8A8A8A" }}>
+                Enjoy!
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ── Fixed-position drag ghost — renders above ALL stacking contexts ── */}
       <AnimatePresence>
