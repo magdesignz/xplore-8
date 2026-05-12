@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence, useAnimation } from "motion/react";
 import type { FoodItem } from "@/lib/types";
 
@@ -31,7 +31,6 @@ export function FoodCard({
   const [minusBurst, setMinusBurst] = useState(false);
   const [isDragging,  setIsDragging]  = useState(false);
   const emojiControls = useAnimation();
-  const rot = dragRotation(food);
 
   /* ── +/- button handlers ── */
   const handleAdd = () => {
