@@ -13,7 +13,6 @@ import { MealTabs }          from "./MealTabs";
 import { FoodCard }          from "./FoodCard";
 import { StackArea }         from "./StackArea";
 import { CircularProgress }  from "./CircularProgress";
-import { GoalPopup }         from "./GoalPopup";
 
 import { CALORIE_GOAL, MEAL_FOODS } from "@/lib/data";
 import type { MealCategory, FoodItem, StackLayer } from "@/lib/types";
@@ -52,9 +51,8 @@ export default function CalorieStackExperience() {
   const plateRef = useRef<HTMLDivElement>(null);
 
   // ── Calorie / goal ───────────────────────────────────────────────────────
-  const bounceControls  = useAnimation();
-  const prevGoalRef     = useRef(false);
-  const [showGoalPopup, setShowGoalPopup] = useState(false);
+  const bounceControls = useAnimation();
+  const prevGoalRef    = useRef(false);
 
   const totalCalories = stackLayers.reduce((sum, l) => sum + l.calories, 0);
   const isGoalReached = totalCalories >= CALORIE_GOAL;
@@ -65,7 +63,6 @@ export default function CalorieStackExperience() {
         scale: [1, 1.09, 0.95, 1.05, 1],
         transition: { duration: 0.6, ease: "easeInOut" },
       });
-      setShowGoalPopup(true);
     }
     prevGoalRef.current = isGoalReached;
   }, [isGoalReached, bounceControls]);
@@ -105,12 +102,6 @@ export default function CalorieStackExperience() {
       ...prev,
       [food.id]: Math.max(0, (prev[food.id] || 0) - 1),
     }));
-  }, []);
-
-  const handleReset = useCallback(() => {
-    setShowGoalPopup(false);
-    setStackLayers([]);
-    setFoodCounts({});
   }, []);
 
   const currentFoods = MEAL_FOODS[activeMeal];
@@ -261,11 +252,6 @@ export default function CalorieStackExperience() {
           </div>
         </div>
       </div>
-
-      {/* ── Goal popup ── */}
-      <AnimatePresence>
-        {showGoalPopup && <GoalPopup key="goal-popup" onReset={handleReset} />}
-      </AnimatePresence>
 
       {/* ── Fixed-position drag ghost — renders above ALL stacking contexts ── */}
       <AnimatePresence>
