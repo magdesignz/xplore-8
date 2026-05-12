@@ -72,7 +72,7 @@ export default function CalorieStackExperience() {
           setStackLayers([]);
           setFoodCounts({});
         }, 400); // wait for exit animation before clearing
-      }, 2800);
+      }, 1600);
       return () => clearTimeout(t);
     }
     prevGoalRef.current = isGoalReached;
