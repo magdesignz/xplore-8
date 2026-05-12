@@ -17,11 +17,6 @@ interface FoodCardProps {
   onDragOverPlate?: (isOver: boolean) => void;
 }
 
-// Stable per-food rotation for the drag ghost (deterministic, not random)
-function dragRotation(food: FoodItem) {
-  const code = food.id.charCodeAt(0) + food.id.charCodeAt(food.id.length - 1);
-  return ((code % 11) - 5) * 3; // –15° to +15°
-}
 
 export function FoodCard({
   food, count, onAdd, onRemove,
