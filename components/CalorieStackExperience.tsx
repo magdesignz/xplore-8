@@ -60,19 +60,22 @@ export default function CalorieStackExperience() {
 
   useEffect(() => {
     if (isGoalReached && !prevGoalRef.current) {
-      bounceControls.start({
-        scale: [1, 1.09, 0.95, 1.05, 1],
-        transition: { duration: 0.6, ease: "easeInOut" },
-      });
-      setShowCongrats(true);
-      // Auto-dismiss after 2.8 s then reset so the user can start fresh
+      // Let the green arc finish animating before showing the modal (~550 ms)
       const t = setTimeout(() => {
-        setShowCongrats(false);
+        bounceControls.start({
+          scale: [1, 1.09, 0.95, 1.05, 1],
+          transition: { duration: 0.6, ease: "easeInOut" },
+        });
+        setShowCongrats(true);
+        // Auto-dismiss then reset
         setTimeout(() => {
-          setStackLayers([]);
-          setFoodCounts({});
-        }, 400); // wait for exit animation before clearing
-      }, 1600);
+          setShowCongrats(false);
+          setTimeout(() => {
+            setStackLayers([]);
+            setFoodCounts({});
+          }, 400);
+        }, 1600);
+      }, 550);
       return () => clearTimeout(t);
     }
     prevGoalRef.current = isGoalReached;

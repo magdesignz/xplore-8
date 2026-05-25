@@ -24,10 +24,10 @@ const PLATE_SIZE = Math.round((INNER_R * SCALE - 10) * 2); // ≈ 150 px
 
 // ── Fixed plate layouts for SVG food assets ───────────────────────────────────
 const PLATE_LAYOUTS: Record<string, { w: number; h: number; x: number; y: number; scale: number; rotate: number; zIndex: number }> = {
-  salad:          { w: 82, h: 71, x:  -6, y:  10, scale: 1.18, rotate:  -2, zIndex: 2 },
-  "chicken-bowl": { w: 40, h: 55, x:  18, y: -34, scale: 0.84, rotate:  18, zIndex: 5 },
+  salad:          { w: 82, h: 71, x:   0, y:   5, scale: 1.40, rotate:  -2, zIndex: 2 },
+  "chicken-bowl": { w: 40, h: 55, x:  18, y: -34, scale: 0.84, rotate: 128.32, zIndex: 5 },
   pancake:        { w: 55, h: 55, x:  42, y:  -2, scale: 1.08, rotate:   4, zIndex: 6 },
-  sandwich:       { w: 58, h: 52, x: -10, y:  42, scale: 0.90, rotate: -12, zIndex: 7 },
+  sandwich:       { w: 58, h: 52, x: -10, y:  42, scale: 1.02, rotate: -54.14, zIndex: 7 },
 };
 
 // ── Fallback emoji slots (non-SVG foods) ──────────────────────────────────────
