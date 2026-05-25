@@ -202,7 +202,7 @@ export default function CalorieStackExperience() {
             <div style={{ height: 1, background: "#EFEFEF", margin: "0 16px" }} />
 
             {/* Stack area — fills remaining card height */}
-            <div className="px-4 py-1 flex-1" style={{ overflow: "visible", minHeight: 0 }}>
+            <div className="px-4 py-3 flex-1" style={{ overflow: "visible", minHeight: 0 }}>
               <StackArea stackLayers={stackLayers} />
             </div>
           </motion.div>
