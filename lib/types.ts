@@ -6,6 +6,7 @@ export interface FoodItem {
   calories: number;
   emoji: string;
   color: string; // pastel card background
+  svgPath?: string;
 }
 
 export interface StackLayer {
@@ -15,4 +16,5 @@ export interface StackLayer {
   calories: number;
   emoji: string;
   color: string;
+  svgPath?: string;
 }

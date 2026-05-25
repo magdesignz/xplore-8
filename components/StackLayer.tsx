@@ -40,7 +40,16 @@ export function StackLayer({ layer, depth, totalVisible }: StackLayerProps) {
           height:      CARD_H,
         }}
       >
-        <span className="text-lg select-none leading-none shrink-0">{layer.emoji}</span>
+        {layer.svgPath ? (
+          <img
+            src={layer.svgPath}
+            alt={layer.name}
+            draggable={false}
+            style={{ width: 24, height: 24, objectFit: "contain", flexShrink: 0, userSelect: "none" }}
+          />
+        ) : (
+          <span className="text-lg select-none leading-none shrink-0">{layer.emoji}</span>
+        )}
 
         <div className="flex-1 min-w-0">
           <div className="text-[13px] font-semibold leading-tight truncate" style={{ color: "#1A1A1A" }}>

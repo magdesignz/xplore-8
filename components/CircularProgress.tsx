@@ -22,7 +22,15 @@ const SCALE     = SVG_SIZE / VB;                      // 196/177 ≈ 1.107
 // Inner radius in CSS px at render size, then subtract 10 px gap each side
 const PLATE_SIZE = Math.round((INNER_R * SCALE - 10) * 2); // ≈ 150 px
 
-// ── Emoji slots on the plate ───────────────────────────────────────────────────
+// ── Fixed plate layouts for SVG food assets ───────────────────────────────────
+const PLATE_LAYOUTS: Record<string, { w: number; h: number; x: number; y: number; scale: number; rotate: number; zIndex: number }> = {
+  salad:          { w: 82, h: 71, x: -30, y:   8, scale: 1.02, rotate:  -6, zIndex: 2 },
+  "chicken-bowl": { w: 40, h: 55, x:  18, y: -34, scale: 0.84, rotate:  18, zIndex: 5 },
+  pancake:        { w: 55, h: 55, x:  42, y:  -2, scale: 1.08, rotate:   4, zIndex: 6 },
+  sandwich:       { w: 58, h: 52, x: -10, y:  42, scale: 0.94, rotate: -14, zIndex: 1 },
+};
+
+// ── Fallback emoji slots (non-SVG foods) ──────────────────────────────────────
 const EMOJI_SLOTS = [
   { x:  0,   y:  0,  r: -6 },
   { x: -14,  y: -13, r:  8 },
@@ -95,10 +103,15 @@ export const CircularProgress = forwardRef<HTMLDivElement, CircularProgressProps
     // Dash offset: CIRC = empty, 0 = full
     const dashOffset = CIRC * (1 - pct);
 
-    const uniqueEmojis: string[] = [];
+    // Build unique plate items — SVG-layout foods first, emoji fallback for rest
+    const plateItems: Array<{ foodId: string; svgPath?: string; emoji: string; index: number }> = [];
+    const seen = new Set<string>();
     for (const layer of [...stackLayers].reverse()) {
-      if (!uniqueEmojis.includes(layer.emoji)) uniqueEmojis.push(layer.emoji);
-      if (uniqueEmojis.length >= 6) break;
+      if (!seen.has(layer.foodId)) {
+        seen.add(layer.foodId);
+        plateItems.push({ foodId: layer.foodId, svgPath: layer.svgPath, emoji: layer.emoji, index: plateItems.length });
+        if (plateItems.length >= 6) break;
+      }
     }
 
     return (
@@ -191,29 +204,55 @@ export const CircularProgress = forwardRef<HTMLDivElement, CircularProgressProps
               priority
             />
 
-            {/* Food emojis on plate */}
+            {/* Food items on plate */}
             <div
               className="absolute inset-0 flex items-center justify-center"
               style={{ pointerEvents: "none" }}
             >
               <AnimatePresence>
-                {uniqueEmojis.map((emoji, i) => (
-                  <motion.span
-                    key={emoji}
-                    initial={{ scale: 0, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{    scale: 0, opacity: 0 }}
-                    transition={{
-                      type: "spring", stiffness: 500, damping: 22, delay: i * 0.03,
-                    }}
-                    className="absolute text-[15px] leading-none select-none"
-                    style={{
-                      transform: `translate(${EMOJI_SLOTS[i].x}px, ${EMOJI_SLOTS[i].y}px) rotate(${EMOJI_SLOTS[i].r}deg)`,
-                    }}
-                  >
-                    {emoji}
-                  </motion.span>
-                ))}
+                {plateItems.map((item) => {
+                  const layout = PLATE_LAYOUTS[item.foodId];
+                  if (item.svgPath && layout) {
+                    return (
+                      <motion.img
+                        key={item.foodId}
+                        src={item.svgPath}
+                        alt={item.foodId}
+                        draggable={false}
+                        initial={{ scale: 0, opacity: 0, x: layout.x, y: layout.y, rotate: layout.rotate }}
+                        animate={{ scale: layout.scale, opacity: 1, x: layout.x, y: layout.y, rotate: layout.rotate }}
+                        exit={{    scale: 0, opacity: 0 }}
+                        transition={{ type: "spring", stiffness: 220, damping: 20 }}
+                        style={{
+                          position:    "absolute",
+                          top:         "50%",
+                          left:        "50%",
+                          width:       layout.w,
+                          height:      layout.h,
+                          marginLeft:  -layout.w / 2,
+                          marginTop:   -layout.h / 2,
+                          zIndex:      layout.zIndex,
+                          userSelect:  "none",
+                        }}
+                      />
+                    );
+                  }
+                  // Fallback: emoji at slot position
+                  const slot = EMOJI_SLOTS[item.index] ?? EMOJI_SLOTS[0];
+                  return (
+                    <motion.span
+                      key={item.foodId}
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1, x: slot.x, y: slot.y, rotate: slot.r }}
+                      exit={{    scale: 0, opacity: 0 }}
+                      transition={{ type: "spring", stiffness: 500, damping: 22 }}
+                      className="absolute text-[15px] leading-none select-none"
+                      style={{ zIndex: item.index + 1 }}
+                    >
+                      {item.emoji}
+                    </motion.span>
+                  );
+                })}
               </AnimatePresence>
             </div>
           </motion.div>

@@ -96,7 +96,7 @@ export default function CalorieStackExperience() {
       const instanceId = `${food.id}-${counterRef.current}`;
       setStackLayers((prev) => [
         ...prev,
-        { instanceId, foodId: food.id, name: food.name, calories: food.calories, emoji: food.emoji, color: food.color },
+        { instanceId, foodId: food.id, name: food.name, calories: food.calories, emoji: food.emoji, color: food.color, svgPath: food.svgPath },
       ]);
       setFoodCounts((prev) => ({ ...prev, [food.id]: (prev[food.id] || 0) + 1 }));
     },
@@ -334,7 +334,16 @@ export default function CalorieStackExperience() {
               rotate: `${((draggingFood.id.charCodeAt(0) + draggingFood.id.charCodeAt(draggingFood.id.length - 1)) % 11 - 5) * 3}deg`,
             }}
           >
-            {draggingFood.emoji}
+            {draggingFood.svgPath ? (
+              <img
+                src={draggingFood.svgPath}
+                alt={draggingFood.name}
+                draggable={false}
+                style={{ width: 120, height: 120, objectFit: "contain", pointerEvents: "none", userSelect: "none" }}
+              />
+            ) : (
+              draggingFood.emoji
+            )}
           </motion.div>
         )}
       </AnimatePresence>

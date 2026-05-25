@@ -99,25 +99,56 @@ export function FoodCard({
       whileHover={{ y: -3, boxShadow: "0px 8px 22px rgba(0,0,0,0.09)" }}
       transition={{ type: "spring", stiffness: 320, damping: 20 }}
     >
-      {/* ── Draggable emoji (invisible while dragging — parent renders ghost) ── */}
-      <motion.span
-        drag
-        dragMomentum={false}
-        dragElastic={0.08}
-        animate={emojiControls}
-        onDragStart={handleDragStart}
-        onDrag={handleDrag}
-        onDragEnd={handleDragEnd}
-        className="text-xl select-none leading-none shrink-0"
-        style={{
-          cursor:      isDragging ? "grabbing" : "grab",
-          touchAction: "none",
-          opacity:     isDragging ? 0 : 1,
-          position:    "relative",
-        }}
-      >
-        {food.emoji}
-      </motion.span>
+      {/* ── Draggable icon (invisible while dragging — parent renders ghost) ── */}
+      {food.svgPath ? (
+        <motion.div
+          drag
+          dragMomentum={false}
+          dragElastic={0.08}
+          animate={emojiControls}
+          onDragStart={handleDragStart}
+          onDrag={handleDrag}
+          onDragEnd={handleDragEnd}
+          className="shrink-0"
+          style={{
+            cursor:      isDragging ? "grabbing" : "grab",
+            touchAction: "none",
+            opacity:     isDragging ? 0 : 1,
+            position:    "relative",
+            width:       36,
+            height:      36,
+            display:     "flex",
+            alignItems:  "center",
+            justifyContent: "center",
+          }}
+        >
+          <img
+            src={food.svgPath}
+            alt={food.name}
+            draggable={false}
+            style={{ width: 36, height: 36, objectFit: "contain", pointerEvents: "none", userSelect: "none" }}
+          />
+        </motion.div>
+      ) : (
+        <motion.span
+          drag
+          dragMomentum={false}
+          dragElastic={0.08}
+          animate={emojiControls}
+          onDragStart={handleDragStart}
+          onDrag={handleDrag}
+          onDragEnd={handleDragEnd}
+          className="text-xl select-none leading-none shrink-0"
+          style={{
+            cursor:      isDragging ? "grabbing" : "grab",
+            touchAction: "none",
+            opacity:     isDragging ? 0 : 1,
+            position:    "relative",
+          }}
+        >
+          {food.emoji}
+        </motion.span>
+      )}
 
       {/* ── Name + cals ── */}
       <div className="flex-1 min-w-0">

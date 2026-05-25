@@ -13,15 +13,15 @@ export const MEAL_ICONS: Record<MealCategory, string> = {
 
 export const MEAL_FOODS: Record<MealCategory, FoodItem[]> = {
   Breakfast: [
-    { id: "salad",         name: "Garden Salad",    calories: 410, emoji: "🥗", color: "#E8F5E9" },
-    { id: "chicken-bowl",  name: "Chicken Bowl",    calories: 540, emoji: "🍗", color: "#FFF8E1" },
-    { id: "sandwich",      name: "Turkey Sandwich", calories: 480, emoji: "🥪", color: "#FFF3E0" },
-    { id: "pancake",       name: "Pancake",         calories: 450, emoji: "🥞", color: "#FCE4EC" },
+    { id: "salad",         name: "Garden Salad",    calories: 410, emoji: "🥗", color: "#E8F5E9", svgPath: "/foods/salad.svg"    },
+    { id: "chicken-bowl",  name: "Chicken Bowl",    calories: 540, emoji: "🍗", color: "#FFF8E1", svgPath: "/foods/chicken.svg"  },
+    { id: "sandwich",      name: "Turkey Sandwich", calories: 480, emoji: "🥪", color: "#FFF3E0", svgPath: "/foods/sandwich.svg" },
+    { id: "pancake",       name: "Pancake",         calories: 450, emoji: "🥞", color: "#FCE4EC", svgPath: "/foods/pancake.svg"  },
   ],
   Lunch: [
-    { id: "chicken-bowl",  name: "Chicken Bowl",    calories: 540, emoji: "🍗", color: "#FFF8E1" },
-    { id: "salad",         name: "Garden Salad",    calories: 410, emoji: "🥗", color: "#E8F5E9" },
-    { id: "sandwich",      name: "Turkey Sandwich", calories: 480, emoji: "🥪", color: "#FFF3E0" },
+    { id: "chicken-bowl",  name: "Chicken Bowl",    calories: 540, emoji: "🍗", color: "#FFF8E1", svgPath: "/foods/chicken.svg"  },
+    { id: "salad",         name: "Garden Salad",    calories: 410, emoji: "🥗", color: "#E8F5E9", svgPath: "/foods/salad.svg"    },
+    { id: "sandwich",      name: "Turkey Sandwich", calories: 480, emoji: "🥪", color: "#FFF3E0", svgPath: "/foods/sandwich.svg" },
     { id: "soup",          name: "Tomato Soup",     calories: 430, emoji: "🍲", color: "#FCE4EC" },
   ],
   Dinner: [
