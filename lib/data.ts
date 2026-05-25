@@ -13,27 +13,27 @@ export const MEAL_ICONS: Record<MealCategory, string> = {
 
 export const MEAL_FOODS: Record<MealCategory, FoodItem[]> = {
   Breakfast: [
-    { id: "salad",         name: "Garden Salad",    calories: 480, emoji: "🥗", color: "#E8F5E9" },
-    { id: "chicken-bowl",  name: "Chicken Bowl",    calories: 720, emoji: "🍗", color: "#FFF8E1" },
-    { id: "sandwich",      name: "Turkey Sandwich", calories: 650, emoji: "🥪", color: "#FFF3E0" },
-    { id: "pancake",       name: "Pancake",         calories: 580, emoji: "🥞", color: "#FCE4EC" },
+    { id: "salad",         name: "Garden Salad",    calories: 410, emoji: "🥗", color: "#E8F5E9" },
+    { id: "chicken-bowl",  name: "Chicken Bowl",    calories: 540, emoji: "🍗", color: "#FFF8E1" },
+    { id: "sandwich",      name: "Turkey Sandwich", calories: 480, emoji: "🥪", color: "#FFF3E0" },
+    { id: "pancake",       name: "Pancake",         calories: 450, emoji: "🥞", color: "#FCE4EC" },
   ],
   Lunch: [
-    { id: "chicken-bowl",  name: "Chicken Bowl",    calories: 720, emoji: "🍗", color: "#FFF8E1" },
-    { id: "salad",         name: "Garden Salad",    calories: 480, emoji: "🥗", color: "#E8F5E9" },
-    { id: "sandwich",      name: "Turkey Sandwich", calories: 650, emoji: "🥪", color: "#FFF3E0" },
-    { id: "soup",          name: "Tomato Soup",     calories: 550, emoji: "🍲", color: "#FCE4EC" },
+    { id: "chicken-bowl",  name: "Chicken Bowl",    calories: 540, emoji: "🍗", color: "#FFF8E1" },
+    { id: "salad",         name: "Garden Salad",    calories: 410, emoji: "🥗", color: "#E8F5E9" },
+    { id: "sandwich",      name: "Turkey Sandwich", calories: 480, emoji: "🥪", color: "#FFF3E0" },
+    { id: "soup",          name: "Tomato Soup",     calories: 430, emoji: "🍲", color: "#FCE4EC" },
   ],
   Dinner: [
-    { id: "salmon",        name: "Grilled Salmon",  calories: 680, emoji: "🐟", color: "#E3F2FD" },
-    { id: "pasta",         name: "Pasta Primavera", calories: 790, emoji: "🍝", color: "#FFF3E0" },
-    { id: "steak",         name: "Lean Steak",      calories: 860, emoji: "🥩", color: "#FCE4EC" },
-    { id: "burger",        name: "Cheese Burger",   calories: 920, emoji: "🍔", color: "#FFF8E1" },
+    { id: "salmon",        name: "Grilled Salmon",  calories: 460, emoji: "🐟", color: "#E3F2FD" },
+    { id: "pasta",         name: "Pasta Primavera", calories: 520, emoji: "🍝", color: "#FFF3E0" },
+    { id: "steak",         name: "Lean Steak",      calories: 550, emoji: "🥩", color: "#FCE4EC" },
+    { id: "burger",        name: "Cheese Burger",   calories: 500, emoji: "🍔", color: "#FFF8E1" },
   ],
   Snack: [
     { id: "apple",         name: "Apple Slices",    calories: 420, emoji: "🍎", color: "#FCE4EC" },
-    { id: "almonds",       name: "Mixed Almonds",   calories: 510, emoji: "🥜", color: "#FFF3E0" },
-    { id: "yogurt",        name: "Greek Yogurt",    calories: 480, emoji: "🥛", color: "#E3F2FD" },
-    { id: "protein-bar",   name: "Protein Bar",     calories: 560, emoji: "🍫", color: "#F3E5F5" },
+    { id: "almonds",       name: "Mixed Almonds",   calories: 470, emoji: "🥜", color: "#FFF3E0" },
+    { id: "yogurt",        name: "Greek Yogurt",    calories: 440, emoji: "🥛", color: "#E3F2FD" },
+    { id: "protein-bar",   name: "Protein Bar",     calories: 510, emoji: "🍫", color: "#F3E5F5" },
   ],
 };
