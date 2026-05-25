@@ -115,8 +115,8 @@ export function FoodCard({
             touchAction: "none",
             opacity:     isDragging ? 0 : 1,
             position:    "relative",
-            width:       36,
-            height:      36,
+            width:       31,
+            height:      31,
             display:     "flex",
             alignItems:  "center",
             justifyContent: "center",
@@ -126,7 +126,7 @@ export function FoodCard({
             src={food.svgPath}
             alt={food.name}
             draggable={false}
-            style={{ width: 36, height: 36, objectFit: "contain", pointerEvents: "none", userSelect: "none" }}
+            style={{ width: 31, height: 31, objectFit: "contain", pointerEvents: "none", userSelect: "none" }}
           />
         </motion.div>
       ) : (
